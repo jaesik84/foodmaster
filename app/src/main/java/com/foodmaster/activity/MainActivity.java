@@ -21,7 +21,7 @@ import map.MapApiConst;
 
 public class MainActivity extends FragmentActivity implements MapView.CurrentLocationEventListener, MapReverseGeoCoder.ReverseGeoCodingResultListener {
 
-    private static final String LOG_TAG = "LocationDemoActivity";
+    private static final String LOG_TAG = "MainActivity";
     private final int MENU_LOCATION = Menu.FIRST;
     private final int MENU_REVERSE_GEO = Menu.FIRST + 1;
 
@@ -41,6 +41,11 @@ public class MainActivity extends FragmentActivity implements MapView.CurrentLoc
 
         mMapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading);
         mMapView.setShowCurrentLocationMarker(true);
+
+        // 줌 레벨 변경
+        mMapView.setZoomLevel(7, true);
+
+
     }
 
     @Override
