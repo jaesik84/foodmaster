@@ -1,13 +1,19 @@
 package com.foodmaster.activity;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.foodmaster.R;
@@ -29,23 +35,91 @@ public class MainActivity extends FragmentActivity implements MapView.CurrentLoc
     private MapReverseGeoCoder mReverseGeoCoder = null;
     private boolean isUsingCustomLocationMarker = false;
 
+    private static final int REQUEST_CODE_LOCATION = 2;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
-        setContentView(R.layout.demo_nested_mapview);
+        setContentView(R.layout.activity_main);
 
-        mMapView = (MapView) findViewById(R.id.map_view);
+//        startActivity(new Intent(this, SplashActivity.class));
+
+        // 안드로이드 6버전 이상시 퍼미션 적용
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Check Permissions Now
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+                // Display UI and wait for user interaction
+            } else {
+                ActivityCompat.requestPermissions(
+                        this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_CODE_LOCATION);
+            }
+        }
+
+        mMapView = new MapView(this);
         mMapView.setDaumMapApiKey(MapApiConst.DAUM_MAPS_ANDROID_APP_API_KEY);
-        mMapView.setCurrentLocationEventListener(this);
-
-        mMapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading);
+        // 현위치를 표시하는 아이콘(마커)를 화면에 표시할지 여부를 설정
         mMapView.setShowCurrentLocationMarker(true);
+        // 다운로드한 지도 이미지 데이터를 단말의 영구(persistent) 캐쉬 영역에 저장
+        mMapView.setMapTilePersistentCacheEnabled(true);
 
-        // 줌 레벨 변경
-        mMapView.setZoomLevel(7, true);
+        RelativeLayout container = (RelativeLayout) findViewById(R.id.map_view);
+        container.addView(mMapView);
 
+        btnEvent();
 
+    }
+
+    private void btnEvent() {
+        new ExampleAsyncTask().execute("1", "2", "3", "4", "5");
+    }
+
+    class ExampleAsyncTask extends AsyncTask<String, Integer, Long> {
+
+        @Override
+        protected void onCancelled() {
+            super.onCancelled();
+        }
+
+        @Override
+        protected void onPostExecute(Long result) {
+            Toast.makeText(MainActivity.this, "Thread END", Toast.LENGTH_SHORT).show();
+            // 줌 레벨 변경
+            mMapView.setCurrentLocationTrackingMode(MapView.CurrentLocationTrackingMode.TrackingModeOnWithHeading);
+            mMapView.setZoomLevel(-5, true);
+            super.onPostExecute(result);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Toast.makeText(MainActivity.this, "Thread START", Toast.LENGTH_SHORT).show();
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Long doInBackground(String... params) {
+            long result = 0;
+            int numberOfParams = params.length;
+            for (int i = 0; i < numberOfParams; i++) {
+                SystemClock.sleep(1000);
+
+            }
+            return result;
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        if (requestCode == REQUEST_CODE_LOCATION) {
+            if (grantResults.length == 1
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // success!
+            } else {
+                // Permission was denied or request was cancelled
+            }
+        }
     }
 
     @Override
@@ -164,27 +238,30 @@ public class MainActivity extends FragmentActivity implements MapView.CurrentLoc
 
     @Override
     public void onCurrentLocationDeviceHeadingUpdate(MapView mapView, float v) {
-
+        Toast.makeText(MainActivity.this, "onCurrentLocationDeviceHeadingUpdate", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onCurrentLocationUpdateFailed(MapView mapView) {
+        Toast.makeText(MainActivity.this, "onCurrentLocationUpdateFailed", Toast.LENGTH_SHORT).show();
 
     }
 
     @Override
     public void onCurrentLocationUpdateCancelled(MapView mapView) {
-
+        Toast.makeText(MainActivity.this, "onCurrentLocationUpdateCancelled", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onReverseGeoCoderFoundAddress(MapReverseGeoCoder mapReverseGeoCoder, String s) {
+        Toast.makeText(MainActivity.this, "onReverseGeoCoderFoundAddress", Toast.LENGTH_SHORT).show();
         mapReverseGeoCoder.toString();
         onFinishReverseGeoCoding(s);
     }
 
     @Override
     public void onReverseGeoCoderFailedToFindAddress(MapReverseGeoCoder mapReverseGeoCoder) {
+        Toast.makeText(MainActivity.this, "onReverseGeoCoderFailedToFindAddress", Toast.LENGTH_SHORT).show();
         onFinishReverseGeoCoding("Fail");
     }
 
